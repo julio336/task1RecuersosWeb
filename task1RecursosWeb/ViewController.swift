@@ -34,33 +34,23 @@ class ViewController: UIViewController {
     @IBAction func searchAction() {
         textField.text = ""
         if isbnField.text != "" {
-            let text = isbnField.text! as String
-            let url = NSURL(string: "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:\(text)")
-            let session = NSURLSession.sharedSession()
-            let task = session.dataTaskWithURL(url!, completionHandler:{data, response, error -> Void in
             
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    let texto = NSString(data: data!, encoding: NSUTF8StringEncoding) as! String
-                    self.textField.text = texto
-                    print(texto)
-                })
-                if let error = error {
-                    print(error.localizedDescription)
-                    //adding a loading alert
-                    let alert = UIAlertController(title: "Atención", message: "Ingresa un numero ISBN", preferredStyle: .Alert)
-                    
-                    alert.view.tintColor = UIColor.blackColor()
-                    let accionOK = UIAlertAction(title: "OK", style: .Default, handler:{
-                        accion in
-                    })
-                    alert.addAction(accionOK)
-                    self.presentViewController(alert, animated: true, completion: nil)
-                    ///////////////////////
-
+            let url = NSURL(string: "https://openlibrary.org/api/books?jscmd=data&format=json&bibkeys=ISBN:"+isbnField.text!)
+            
+            do {
+                let respuesta = try String(contentsOfURL: url!, encoding: NSUTF8StringEncoding)
+                
+                if respuesta != "{}" {
+                    textField.text = respuesta
+                } else {
+                    textField.text = "El ISBN no es correcto."
                 }
-            })
-            
-            task.resume()
+                
+            } catch {
+                let alert = UIAlertController(title: "Error", message: "Hay problemas con la conexión a Internet. Inténtelo de nuevo más tarde.", preferredStyle: UIAlertControllerStyle.Alert)
+                alert.addAction(UIAlertAction(title: "Aceptar", style: UIAlertActionStyle.Default, handler: nil))
+                self.presentViewController(alert, animated: true, completion: nil)
+            }
             
         }else{
             //adding a loading alert
